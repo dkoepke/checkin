@@ -1,15 +1,20 @@
 from flask import Flask, render_template, request, Response
 from functools import wraps
+import logging
 from os import getenv
 from psycopg2 import connect
+from psycopg2.extras import DictCursor
 
 from services import AuthenticationService, CheckinService
 
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 
 ADMIN_USER = getenv('CHECKIN_ADMIN_USER', 'admin')
 ADMIN_PASSWORD = getenv('CHECKIN_ADMIN_PASSWORD', object())
+
+GOOGLE_API_KEY = getenv('CHECKIN_GOOGLE_API_KEY')
 
 DB_HOST = getenv('CHECKIN_DB_HOST', 'localhost')
 DB_PORT = int(getenv('CHECKIN_DB_PORT', 5432))
@@ -18,7 +23,7 @@ DB_PASSWORD = getenv('CHECKIN_DB_PASSWORD')
 DB_NAME = getenv('CHECKIN_DB_NAME')
 
 DB = connect(database=DB_NAME, user=DB_USER, password=DB_PASSWORD,
-             host=DB_HOST, port=DB_PORT)
+             host=DB_HOST, port=DB_PORT, cursor_factory=DictCursor)
 
 
 try:
@@ -29,10 +34,11 @@ CREATE TABLE checkins (
     name        TEXT NOT NULL,
     longitude   NUMERIC NOT NULL,
     latitude    NUMERIC NOT NULL,
-    when        TIMESTAMP NOT NULL
+    "when"      TIMESTAMP NOT NULL
 )""")
+    DB.commit()
 except:
-    pass
+    DB.rollback()
 
 auth_svc = AuthenticationService()
 auth_svc.add_admin_user(ADMIN_USER, ADMIN_PASSWORD)
@@ -65,7 +71,7 @@ def checkin():
 @requires_auth
 def admin():
     checkins = checkin_svc.get_checkins()
-    return render_template('admin.html', {'checkins': checkins})
+    return render_template('admin.html', checkins=checkins, google_api_key=GOOGLE_API_KEY)
 
 
 if __name__ == '__main__':

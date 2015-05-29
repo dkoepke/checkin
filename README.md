@@ -26,6 +26,10 @@ The admin interface is configured with the following environment variables:
 * `CHECKIN_ADMIN_USER`
 * `CHECKIN_ADMIN_PASSWORD`
 
+The Google Maps API key is set with:
+
+* `CHECKIN_GOOGLE_API_KEY`
+
 Set the above environment variables to whatever is appropriate from your RDS configuration and then run the app:
 
 ```

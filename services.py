@@ -1,5 +1,7 @@
 from contextlib import contextmanager
 
+from models import Checkin
+
 
 class CheckinService(object):
     def __init__(self, db):
@@ -11,7 +13,9 @@ class CheckinService(object):
         try:
             cur = self.db.cursor()
             yield cur
+            self.db.commit()
         finally:
+            self.db.rollback()
             cur.close()
 
     def checkin(self, name, longitude, latitude):
@@ -36,27 +40,40 @@ VALUES (%(name), %(longitude), %(latitude))""", params)
                 limit_and_offset += " OFFSET %d" % skip
 
             cur.execute("""\
-SELECT id, name, longitude, latitude, when
+SELECT id, name, longitude, latitude, "when"
 FROM checkins
-ORDER BY when DESC, id DESC""" + limit_and_offset)
+ORDER BY "when" DESC, id DESC""" + limit_and_offset)
 
-            return cur.fetchall()
+            return [Checkin.from_dict(row) for row in cur]
 
         return []
 
-    def get_recent_checkins(self, since_datetime):
+    def get_recent_checkins(self, since_datetime=None):
         """Get checkins since a particular datetime.
 
         """
         with self._cursor() as cur:
-            cur.execute("""\
-SELECT id, name, longitude, latitude, when
-FROM checkins
-WHERE since > %(since_datetiem)
-ORDER BY when DESC, id DESC""", {'since_datetiem': since_datetime})
+            query = """\
+SELECT c1.id, c1.name, c1.longitude, c1.latitude, c1."when"
+FROM checkins AS c1
+INNER JOIN (
+    SELECT id, MAX("when")
+    FROM checkins
+    GROUP BY name, id
+) AS c2 ON c2.id = c1.id
+"""
+            params = {}
+
+            if since_datetime:
+                query += "WHERE c1.since > %(since_datetiem)\n"
+                params['since_datetime'] = since_datetime
+
+            query += 'ORDER BY c1."when" DESC, id DESC'
+
+            cur.execute(query, params)
             return cur.fetchall()
 
-        return []
+        return [Checkin.from_dict(row) for row in cur]
 
 
 class AuthenticationService(object):
@@ -68,6 +85,4 @@ class AuthenticationService(object):
         self.admin_users[username] = password
 
     def authenticate(self, username, password):
-        return bool(
-            username in self.admin_users and
-            self.admin_users[username] == password)
+        return self.admin_users.get(username, object()) == password

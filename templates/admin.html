@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Prototype Admin</title>
+
+    </head>
+
+    <body>
+        <h1>Prototype Admin</h1>
+
+        <h2>Most Recent Checkins by Person</h2>
+        <ul id="checkins">
+        {% for checkin in checkins %}
+            <li>
+                <span class="name">{{ checkin.name }}</span> at
+                <span class="dt">{{ checkin.when }}</span>:
+                Latitude=<span class="lat">{{ checkin.latitude }}</span>,
+                Longitude=<span class="lng">{{ checkin.longitude }}</span>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <div id="map" style="width: 100%; height: 600px;"></div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="http://maps.google.com/maps/api/js?sensor=false&key={{ google_api_key }}"></script>
+        <script src="{{ url_for('static', filename='admin.js') }}"></script>
+    </body>
+</html>
