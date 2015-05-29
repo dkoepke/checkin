@@ -7,7 +7,7 @@ A tiny service that records location checkins
 Create an RDS PostgreSQL instance that can be connected to from your server, then:
 
 ```
-sudo apt-get install -y python-setuptools postgresql-client libpq-dev
+sudo apt-get install -y python-setuptools postgresql-client libpq-dev python-dev
 sudo easy_install pip
 sudo pip install virtualenv
 virtualenv env
