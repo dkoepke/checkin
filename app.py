@@ -66,3 +66,7 @@ def checkin():
 def admin():
     checkins = checkin_svc.get_checkins()
     return render_template('admin.html', {'checkins': checkins})
+
+
+if __name__ == '__main__':
+    app.run()
