@@ -59,7 +59,7 @@ ORDER BY when DESC, id DESC""", {'since_datetiem': since_datetime})
         return []
 
 
-def AuthenticationService(object):
+class AuthenticationService(object):
     def __init__(self):
         super(AuthenticationService, self).__init__()
         self.admin_users = {}

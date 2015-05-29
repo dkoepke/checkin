@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 
 ADMIN_USER = getenv('CHECKIN_ADMIN_USER', 'admin')
-ADMIN_PASSWORD = getenv('CHEKIN_ADMIN_PASSWORD', object())
+ADMIN_PASSWORD = getenv('CHECKIN_ADMIN_PASSWORD', object())
 
 DB_HOST = getenv('CHECKIN_DB_HOST', 'localhost')
 DB_PORT = int(getenv('CHECKIN_DB_PORT', 5432))
