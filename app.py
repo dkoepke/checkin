@@ -3,7 +3,7 @@ from functools import wraps
 from os import getenv
 from psycopg2 import connect
 
-from .services import AuthenticationService, CheckinService
+from services import AuthenticationService, CheckinService
 
 app = Flask(__name__)
 
