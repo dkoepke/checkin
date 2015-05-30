@@ -3,8 +3,8 @@ class Checkin(object):
         super(Checkin, self).__init__()
         self.id = None
         self.name = None
-        self.longitude = None
         self.latitude = None
+        self.longitude = None
         self.when = None
 
     @classmethod
@@ -12,7 +12,7 @@ class Checkin(object):
         it = Checkin()
         it.id = a_dict['id']
         it.name = a_dict['name']
-        it.longitude = a_dict['longitude']
         it.latitude = a_dict['latitude']
+        it.longitude = a_dict['longitude']
         it.when = a_dict['when']
         return it

@@ -1,49 +1,19 @@
 from flask import Flask, render_template, request, Response
 from functools import wraps
-import logging
-from os import getenv
-from psycopg2 import connect
-from psycopg2.extras import DictCursor
 
-from services import AuthenticationService, CheckinService
+from config import ADMIN_USER, ADMIN_PASSWORD, GOOGLE_API_KEY
+from services import AuthenticationService, CheckinService, DatabaseService
 
-logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 
-ADMIN_USER = getenv('CHECKIN_ADMIN_USER', 'admin')
-ADMIN_PASSWORD = getenv('CHECKIN_ADMIN_PASSWORD', object())
-
-GOOGLE_API_KEY = getenv('CHECKIN_GOOGLE_API_KEY')
-
-DB_HOST = getenv('CHECKIN_DB_HOST', 'localhost')
-DB_PORT = int(getenv('CHECKIN_DB_PORT', 5432))
-DB_USER = getenv('CHECKIN_DB_USER')
-DB_PASSWORD = getenv('CHECKIN_DB_PASSWORD')
-DB_NAME = getenv('CHECKIN_DB_NAME')
-
-DB = connect(database=DB_NAME, user=DB_USER, password=DB_PASSWORD,
-             host=DB_HOST, port=DB_PORT, cursor_factory=DictCursor)
-
-
-try:
-    cur = DB.cursor()
-    cur.execute("""\
-CREATE TABLE checkins (
-    id          BIGSERIAL PRIMARY KEY,
-    name        TEXT NOT NULL,
-    longitude   NUMERIC NOT NULL,
-    latitude    NUMERIC NOT NULL,
-    "when"      TIMESTAMP NOT NULL
-)""")
-    DB.commit()
-except:
-    DB.rollback()
+db_svc = DatabaseService()
+db_svc.setup_tables()
 
 auth_svc = AuthenticationService()
 auth_svc.add_admin_user(ADMIN_USER, ADMIN_PASSWORD)
 
-checkin_svc = CheckinService(DB)
+checkin_svc = CheckinService(db_svc)
 
 
 def requires_auth(f):
@@ -60,9 +30,10 @@ def requires_auth(f):
 
 @app.route('/checkin', methods=['POST'])
 def checkin():
-    data = request.get_json()
+    data = request.form
+
     try:
-        checkin_svc.checkin(data['name'], data['longitude'], data['latitude'])
+        checkin_svc.checkin(data['name'], data['lat'], data['lng'])
     except:
         pass
 
